@@ -7,5 +7,6 @@ const hasUpcoming = flavours.some((flavour) => flavour.availability === 'coming-
 <section id="flavours" class="flavours-section wrap" aria-labelledby="flavour-heading">
   <div class="section-intro"><div><p class="eyebrow">THE HARDEST PART? PICKING ONE.</p><h2 id="flavour-heading">Pick your little<br /><em>happiness.</em></h2></div><div class="section-aside"><p>{hasUpcoming ? 'Meet the lineup. Plus a little secret.' : 'Different personalities. One happy little cup.'}<br />{hasUpcoming ? 'A mystery flavour is coming soon.' : 'Which one has your name on it?'}</p><span class="menu-note" data-enhance hidden><span aria-hidden="true"><Doodle kind="turn" /></span> Tap a cup. Get the little details.</span></div></div>
   <div class="flavour-grid">{flavours.map((flavour, index) => <FlavourCard flavour={flavour} index={index} />)}</div>
+  <p class="menu-suitability-note"><strong>Working toward Muslim-friendly gelato.</strong> Both revealed flavours use xanthan gum. We’re still checking ingredient sources and preparation, so please ask us before ordering if you have specific requirements.</p>
   <p class="menu-disclaimer">Illustrations are a preview, not actual product photos. Final prices, ingredients and availability are still being confirmed.</p>
 </section>

@@ -2,11 +2,11 @@
 
 **Nibby Gelato** — a playful, illustrated, mobile-first storefront for a home-based gelato business in Melaka.
 
-[![Open the Nibby Gelato website](https://raw.githubusercontent.com/danieltan995-create/HomeBasedGelatoNibby/main/public/social-card.png)](https://danieltan995-create.github.io/HomeBasedGelatoNibby/)
+[![Open the Nibby Gelato website](https://raw.githubusercontent.com/danieltan995/HomeBasedGelatoNibby/main/public/social-card.png)](https://danieltan995.github.io/HomeBasedGelatoNibby/)
 
 ## Current status
 
-This is a working **design preview**, not a live shop. It deliberately has no connected WhatsApp number, numeric prices, currency or promised delivery/pickup arrangement. Draft pages use `noindex, nofollow`, and the generated robots response disallows crawling. These are indexing hints, not access control; keep unpublished previews private if necessary.
+This is a working **design preview**, not a live shop. It has draft prices, MYR, a WhatsApp test-request link and an audit endpoint; availability and delivery/pickup arrangements still need confirmation. Draft pages use `noindex, nofollow`, and the generated robots response disallows crawling. These are indexing hints, not access control; keep unpublished previews private if necessary.
 
 Initial lineup: **Lemon Almond Nibs** and **Dark Chocolate**, plus an unreleased flavour shown publicly as a grey **Mystery flavour** teaser. **Pistachio My Love** is retained in the source data for its later reveal, but has not been prepared or released and cannot be selected. No release date is promised. Planned serving size: approximately **140 ml**, in a lidded container. All artwork is original concept illustration, not photography or confirmed packaging.
 
@@ -39,6 +39,8 @@ WhatsApp numbers must be 8–15 international digits only, with country code and
 
 Availability is owner-maintained, not real-time inventory. The limit of 99 cups per flavour is a request-interface limit, not a stock claim. A data/content change requires rebuilding and redeploying.
 
+The two revealed ingredient lists include xanthan gum as confirmed by the owner. “Working toward Muslim-friendly gelato” is an aspiration, not a verified suitability statement: review every supplier ingredient, processing aid and preparation arrangement before making stronger claims. The coming-soon mystery flavour is not covered by the two revealed lists.
+
 ### Reveal the upcoming flavour
 
 Pistachio currently has `availability: 'coming-soon'` in [src/data/flavours.ts](src/data/flavours.ts). That state automatically replaces its name, colour, artwork and image descriptions with a grey question-mark teaser in both the menu and hero. It displays “Coming soon” rather than a price or add button. Order selections, totals and WhatsApp messages reject it, even if a selection is manually tampered with.
@@ -63,9 +65,9 @@ Design references: [Partake Foods](https://partakefoods.com/) for playful food b
 
 ## How ordering works
 
-The visitor selects flavours and quantities, reviews the order panel, and previews a generated message. Selections live **only in memory** and reset on a page reload; there is no local storage, tracking, account, database or collection of names/addresses on the site.
+The visitor selects flavours and quantities, enters their name and preferred order details, reviews the order panel, and previews a generated message. Those details live in memory until a reload or handoff; there are no accounts or local storage. Clicking Continue to WhatsApp also sends the request details to the configured audit endpoint for tracking.
 
-In draft mode, visitors can copy a message explicitly marked as a preview, but cannot open a WhatsApp order link—even if a number is accidentally populated. In live mode the link opens WhatsApp with the message prefilled; the visitor must still send it. Opening a link does not confirm an order or clear the selection. The owner confirms availability, final amount and fulfilment. WhatsApp’s privacy terms apply after the handoff.
+In draft mode, visitors can copy a preview message or open a marked **test request** in WhatsApp after entering the required details. WhatsApp opens with the message prefilled; the visitor must still send it. Opening a link does not confirm an order or clear the selection. The owner confirms availability, final amount and fulfilment. WhatsApp’s privacy terms apply after the handoff.
 
 Copying uses the browser clipboard on secure origins (HTTPS or localhost). If permission is denied, the message is selected for manual copying. Product information and native expandable sections remain accessible without JavaScript; the quantity builder requires it.
 
@@ -103,9 +105,9 @@ Check the chosen provider’s current commercial-use terms, limits and costs bef
 
 ### Temporary GitHub Pages preview
 
-This repository includes [.github/workflows/deploy.yml](.github/workflows/deploy.yml). Once it is committed and pushed to `main`, the workflow builds and deploys the static site to **https://danieltan995-create.github.io/HomeBasedGelatoNibby/**.
+This repository includes [.github/workflows/deploy.yml](.github/workflows/deploy.yml). Once it is committed and pushed to `main-test`, the workflow builds and deploys the static site to **https://danieltan995.github.io/HomeBasedGelatoNibby/**.
 
-Before the first deployment, open the repository on GitHub, select **Settings** → **Pages**, and choose **GitHub Actions** as the publishing source. Thereafter, every push to `main` deploys; use **Actions** → **Deploy to GitHub Pages** → **Run workflow** to deploy the existing `main` branch manually. Watch that workflow for the published URL and failures.
+Before the first deployment, open the repository on GitHub, select **Settings** → **Pages**, and choose **GitHub Actions** as the publishing source. Thereafter, every push to `main-test` deploys; use **Actions** → **Deploy to GitHub Pages** → **Run workflow** to deploy the selected branch manually. Watch that workflow for the published URL and failures.
 
 The Astro configuration automatically uses `/HomeBasedGelatoNibby/` only inside GitHub Actions; local preview continues to use `/`. Do not change `base` merely to test locally. GitHub Pages is publicly reachable even when a repository is private on plans that permit private Pages, so do not place private details in the preview. The draft site remains `noindex`, but that does not make the URL private.
 

@@ -49,6 +49,17 @@ describe('initial data and flavour validation', () => {
     ]);
   });
 
+  it('lists xanthan gum for both revealed flavours but not the unreleased teaser', () => {
+    for (const flavour of flavours) {
+      if (flavour.availability === 'coming-soon') {
+        expect(flavour.ingredients).toBeNull();
+      } else {
+        expect(flavour.ingredients).toContain('Xanthan gum');
+        expect(flavour.ingredients).not.toContain('Gelatin');
+      }
+    }
+  });
+
   it('accepts the draft with configured prices and unreviewed content', () => {
     expect(business).toMatchObject({
       mode: 'draft',

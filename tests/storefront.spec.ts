@@ -126,13 +126,18 @@ test('draft metadata and exact menu names are present without an outbound orderi
   await expect(page.locator('.preview-bar')).toBeVisible();
   await expect(page.locator('#flavours [data-card]')).toHaveCount(3);
   await expect(page.locator('#flavours [data-card] h3')).toHaveText(menu.map(({ name }) => name));
+  await expect(page.locator('.menu-suitability-note')).toContainText('Working toward Muslim-friendly gelato.');
+  await expect(page.locator('.menu-suitability-note')).toContainText('still checking ingredient sources and preparation');
+  await expect(card(page, lemon).locator('.flavour-notes')).toContainText('Xanthan gum');
+  await expect(card(page, chocolate).locator('.flavour-notes')).toContainText('Xanthan gum');
+  await expect(page.locator('body')).not.toContainText(/\bhalal\b/i);
   await expectNoWhatsAppDestination(page);
 
   await addCup(page, lemon);
   await openOrder(page);
   await expect(drawer(page).locator('[data-send-disabled]')).toBeVisible();
   await expect(drawer(page).locator('[data-send-disabled]')).toBeDisabled();
-  await expect(drawer(page).locator('[data-subtotal]')).toContainText(/confirm/i);
+  await expect(drawer(page).locator('[data-subtotal]')).toContainText(/RM\s*11\.90/i);
   await expect(message(page)).toHaveValue(/draft/i);
   await expect(message(page)).toHaveValue(/not an order/i);
   await expectNoWhatsAppDestination(page);
@@ -236,6 +241,31 @@ test('all three main navigation links stay present and reachable on narrow mobil
   await nav.getByRole('link', { name: 'How to order', exact: true }).evaluate((node) => node.scrollIntoView({ behavior: 'instant', inline: 'nearest' }));
   await nav.getByRole('link', { name: 'How to order', exact: true }).click();
   await expect(page).toHaveURL(/#how-to-order$/);
+});
+
+test('revealed and mystery flavour art, names and actions align across the desktop row', async ({ page }) => {
+  await visitStorefront(page);
+  for (const width of [768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await settleVisuals(page);
+    const cards = await page.locator('.flavour-card').evaluateAll((nodes) => nodes.map((node) => {
+      const art = node.querySelector('.flip-front')!.getBoundingClientRect();
+      const heading = node.querySelector('h3')!.getBoundingClientRect();
+      const action = node.querySelector('.product-bottom')?.getBoundingClientRect();
+      return { artTop: art.top, artBottom: art.bottom, artRight: art.right, headingTop: heading.top, actionTop: action?.top };
+    }));
+    for (const item of cards) {
+      expect(Math.abs(item.artTop - cards[0].artTop)).toBeLessThanOrEqual(1);
+      expect(Math.abs(item.artBottom - cards[0].artBottom)).toBeLessThanOrEqual(1);
+      expect(Math.abs(item.headingTop - cards[0].headingTop)).toBeLessThanOrEqual(1);
+      expect(item.artRight).toBeLessThanOrEqual(width + 1);
+    }
+    expect(Math.abs(cards[1].actionTop! - cards[0].actionTop!)).toBeLessThanOrEqual(1);
+    await card(page, lemon).locator('[data-flip-toggle]').click();
+    await expect(card(page, lemon).locator('.flip-back')).toBeVisible();
+    await card(page, lemon).locator('[data-flip-toggle]').click();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  }
 });
 
 test('flavour art flips on activation, stays readable and leaves ordering controls in place', async ({ page, isMobile }) => {
@@ -714,7 +744,7 @@ test.describe('without site JavaScript', () => {
       const details = card(page, flavour).locator('.product-details');
       await details.locator('summary').click();
       await expect(details).toHaveJSProperty('open', true);
-      await expect(details.locator('div')).toBeVisible();
+      await expect(details.locator(':scope > div')).toBeVisible();
     }
     await expectMysteryTeaser(page);
     // Native summary elements may expose button-like roles; they must remain usable.

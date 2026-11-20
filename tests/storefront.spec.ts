@@ -43,6 +43,8 @@ const test = base.extend<{ storefrontSafety: void }>({
 });
 
 const headerBag = (page: Page) => page.locator('.bag-button[data-open-order]');
+// On phones the sticky bottom bar replaces the header cart once a cup is added.
+const activeBag = (page: Page) => page.locator('[data-open-order]:visible').first();
 const drawer = (page: Page) => page.locator('#order-dialog');
 const closeButton = (page: Page) => drawer(page).locator('.drawer-header [data-close-order]');
 const card = (page: Page, flavour: Flavour) => page.locator(`[data-card="${flavour.id}"]`);
@@ -77,8 +79,8 @@ async function addCup(page: Page, flavour: Flavour) {
 }
 
 async function openOrder(page: Page) {
-  // The sticky mobile bag has the same attribute/name; never use an unscoped opener.
-  await headerBag(page).click();
+  // The header cart and the sticky mobile bag share an attribute; open whichever one is on screen.
+  await activeBag(page).click();
   await expect(drawer(page)).toBeVisible();
   await expect(drawer(page)).toHaveAccessibleName(/your.*cups/i);
 }
@@ -173,8 +175,8 @@ test('the complete header stays visible while scrolling, keeping the selected cu
   await expect.poll(() => page.locator('.header-shell').evaluate((node) => Math.round(node.getBoundingClientRect().top)))
     .toBe(0);
   await expect(page.locator('.header-shell')).toBeInViewport();
-  await expect(headerBag(page)).toBeVisible();
-  await headerBag(page).click();
+  await expect(activeBag(page)).toBeVisible();
+  await activeBag(page).click();
   await expect(drawer(page)).toBeVisible();
   await expect(row(page, lemon)).toBeVisible();
 });
@@ -219,28 +221,92 @@ test('decorative stars, hearts, suns and arrows use vectors instead of emoji gly
   }
 });
 
-test('all three main navigation links stay present and reachable on narrow mobile widths', async ({ page }) => {
+test('main navigation collapses into a menu on phones and stays inline on wider screens', async ({ page }) => {
   await visitStorefront(page);
   const nav = page.getByRole('navigation', { name: 'Main navigation' });
+  const menu = page.getByRole('button', { name: 'Menu', exact: true });
   const names = ['Our flavours', 'A little about us', 'How to order'];
-  for (const width of [360, 390, 768]) {
+  for (const width of [360, 390]) {
     await page.setViewportSize({ width, height: 900 });
+    await expect(menu).toBeVisible();
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(nav.getByRole('link')).toHaveCount(0);
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
     for (const name of names) {
       const link = nav.getByRole('link', { name, exact: true });
-      await expect(link).toBeAttached();
-      await expect(link).not.toBeHidden();
+      await expect(link).toBeVisible();
+      const box = await link.boundingBox();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+      expect(box!.height).toBeGreaterThanOrEqual(44);
     }
-    // Every link is reachable via the nav's own horizontal scroll, not clipped off-screen.
-    const lastLink = nav.getByRole('link', { name: names[names.length - 1], exact: true });
-    await lastLink.evaluate((node) => node.scrollIntoView({ behavior: 'instant', inline: 'nearest' }));
-    const box = await lastLink.boundingBox();
-    expect(box!.x).toBeGreaterThanOrEqual(0);
-    expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+    // The menu never makes the header taller than the viewport or pushes the cart out of reach.
+    await expect(headerBag(page)).toBeInViewport();
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(menu).toBeFocused();
+    await expect(nav.getByRole('link')).toHaveCount(0);
   }
   await page.setViewportSize({ width: 390, height: 900 });
-  await nav.getByRole('link', { name: 'How to order', exact: true }).evaluate((node) => node.scrollIntoView({ behavior: 'instant', inline: 'nearest' }));
+  await menu.click();
   await nav.getByRole('link', { name: 'How to order', exact: true }).click();
   await expect(page).toHaveURL(/#how-to-order$/);
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await menu.click();
+  // Tapping empty page margin (outside the menu panel) dismisses it.
+  await page.mouse.click(8, 880);
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  for (const width of [768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(menu).toBeHidden();
+    for (const name of names) {
+      const link = nav.getByRole('link', { name, exact: true });
+      await expect(link).toBeVisible();
+      const box = await link.boundingBox();
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+    }
+  }
+});
+
+test('draft state is explicit on the banner, price tags and subtotal, and the add button names the cart', async ({ page }) => {
+  await visitStorefront(page);
+  await expect(page.locator('.preview-bar')).toContainText('Draft preview');
+  for (const flavour of selectableMenu) {
+    const product = card(page, flavour);
+    await expect(product.locator('.product-price .price-flag')).toContainText(/draft/i);
+    await expect(product.locator('[data-add]')).toHaveText('Add to your cups');
+    await expect(product.locator('[data-add]')).toHaveAccessibleName(`Add to your cups: ${flavour.name}`);
+    await expect(product.locator('[data-flip-label]')).toHaveText('Ingredients & allergens');
+    await product.locator('[data-flip-toggle]').click();
+    await expect(product.locator('[data-flip-label]')).toHaveText('Back to cup');
+    await product.locator('[data-flip-toggle]').click();
+  }
+  await addCup(page, lemon);
+  await openOrder(page);
+  await expect(drawer(page).locator('.subtotal')).toContainText('Draft subtotal');
+  await expect(drawer(page).locator('.order-fineprint').first()).toContainText('Draft prices are placeholders');
+});
+
+test('phones swap the header cart for the sticky bag once a cup is added', async ({ page }) => {
+  await visitStorefront(page);
+  for (const width of [360, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(headerBag(page)).toBeVisible();
+    await expect(page.locator('[data-mobile-bag]')).toBeHidden();
+    await addCup(page, lemon);
+    await expect(headerBag(page)).toBeHidden();
+    await expect(page.locator('[data-mobile-bag]')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeInViewport();
+    await openOrder(page);
+    await drawer(page).locator('[data-clear]').click();
+    await closeButton(page).click();
+    await expect(headerBag(page)).toBeVisible();
+  }
+  await page.setViewportSize({ width: 768, height: 900 });
+  await addCup(page, lemon);
+  await expect(headerBag(page)).toBeVisible();
+  await expect(page.locator('[data-mobile-bag]')).toBeHidden();
 });
 
 test('revealed and mystery flavour art, names and actions align across the desktop row', async ({ page }) => {
@@ -387,20 +453,23 @@ test('floating Back to top works throughout the page and stays clear of the cart
   await expect(backTop).toBeVisible();
 });
 
-test('the compact footer keeps social cards side by side without overflowing', async ({ page }) => {
+test('the footer keeps social cards tidy without overflowing', async ({ page }) => {
   await visitStorefront(page);
   for (const width of [360, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     await settleVisuals(page);
     const footer = await page.locator('.site-footer').boundingBox();
-    expect(footer!.height, `Compact footer at ${width}px`).toBeLessThan(width <= 600 ? 540 : 400);
+    expect(footer!.height, `Compact footer at ${width}px`).toBeLessThan(width <= 600 ? 760 : 400);
     const cards = await page.locator('.social-card').all();
     const boxes = await Promise.all(cards.map((card) => card.boundingBox()));
     expect(boxes).toHaveLength(3);
     for (const box of boxes) {
-      expect(Math.abs(box!.y - boxes[0]!.y)).toBeLessThanOrEqual(1);
       expect(box!.x).toBeGreaterThanOrEqual(0);
       expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+      expect(box!.height).toBeGreaterThanOrEqual(width <= 600 ? 56 : 0);
+      // Phones stack the cards as full-width rows; wider layouts keep them side by side.
+      if (width <= 600) expect(box!.x).toBeLessThanOrEqual(boxes[0]!.x + 1);
+      else expect(Math.abs(box!.y - boxes[0]!.y)).toBeLessThanOrEqual(1);
     }
   }
 });
@@ -501,7 +570,7 @@ test('increment, decrement, removal and clear keep rows, counts and the draft me
   await openOrder(page);
   await expect(drawer(page).locator('[data-line]')).toHaveCount(2);
   await expectMessage(page, [[lemon, 1], [chocolate, 1]]);
-  await expect(message(page)).toHaveValue(/prices?:[^\n]*confirm/i);
+  await expect(message(page)).toHaveValue(/confirm availability, final price/i);
   await expect(message(page)).toHaveValue(/availability/i);
   await expect(message(page)).toHaveValue(/pickup\/delivery.*Melaka/i);
   await expect(message(page)).toHaveValue(/not a confirmed order/i);

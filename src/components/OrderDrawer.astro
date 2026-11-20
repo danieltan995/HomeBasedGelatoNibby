@@ -11,8 +11,8 @@ import Doodle from './Doodle.astro';
     <div data-order-lines></div>
     <div class="empty-order" data-empty-order><span aria-hidden="true"><Doodle kind="heart" /></span><h3>A little empty in here.</h3><p>Your next happy moment starts with a flavour.</p><button class="button" data-close-order>Explore the flavours <Arrow /></button></div>
     <div data-order-summary hidden>
-      <div class="subtotal"><span>Product subtotal</span><strong data-subtotal>To be confirmed</strong></div>
-      <p class="order-fineprint">Final prices, availability and any fulfilment fees need confirmation. {business.fulfilment ?? 'Pickup and delivery details are coming soon.'}</p>
+      <div class="subtotal"><span>{business.mode === 'draft' ? 'Draft subtotal' : 'Product subtotal'}</span><strong data-subtotal>To be confirmed</strong></div>
+            <p class="order-fineprint">{business.mode === 'draft' ? 'Draft prices are placeholders. ' : ''}Final prices, availability and any fulfilment fees need confirmation. {business.fulfilment ?? 'Pickup and delivery details are coming soon.'}</p>
       <fieldset class="request-details" data-request-details>
         <legend>Details for confirmation</legend>
         <label for="customer-name">Your name</label>

@@ -43,9 +43,9 @@ const allPending = profiles.every(({ url }) => url === null);
 
 <style>
   .footer-social { border-top: 1px solid #ffffff24; padding-block: 22px; display: grid; grid-template-columns: .8fr 1.4fr; align-items: center; gap: 30px; }
-  .social-kicker { color: #d8e2b7; font-size: 8px; font-weight: 700; letter-spacing: 1.8px; margin: 0 0 9px; }
+  .social-kicker { color: #d8e2b7; font-size: 10px; font-weight: 700; letter-spacing: 1.8px; margin: 0 0 9px; }
   .social-intro h2 { font-size: 32px; letter-spacing: -1px; }
-  .social-intro > p:last-child { font-size: 11px; color: #dce3cf; margin: 8px 0 0; }
+  .social-intro > p:last-child { font-size: 13px; color: #dce3cf; margin: 8px 0 0; }
   .social-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
   .social-card { --paper: #f0d8c9; position: relative; background: var(--paper); color: #352d27; border-radius: 5px 5px 12px 12px; box-shadow: 0 4px 0 #17281b55; }
   .social-card[data-social="rednote"] { --paper: #f1e6b6; }
@@ -57,10 +57,10 @@ const allPending = profiles.every(({ url }) => url === null);
   .social-badge :global(svg) { width: 25px; height: 25px; }
   .social-peek { width: 24px; height: 24px; border: 1px solid #352d2740; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 19px; line-height: 1; transition: transform 180ms; }
   .social-card[open] .social-peek { transform: rotate(45deg); }
-  .social-name { display: block; font-size: 13px; font-weight: 700; }
+  .social-name { display: block; font-size: 14px; font-weight: 700; }
   .social-caption { display: block; font: italic 14px/1.3 var(--display); margin: 2px 0 10px; }
-  .social-status { display: block; border-top: 1px dashed #352d2750; padding-top: 7px; font-size: 9px; }
-  .social-note { padding: 2px 14px 14px; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+  .social-status { display: block; border-top: 1px dashed #352d2750; padding-top: 7px; font-size: 11px; }
+  .social-note { padding: 2px 14px 14px; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
   .social-note p { margin: 0; }
   .social-note a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
   @media (hover: hover) and (pointer: fine) {
@@ -70,22 +70,23 @@ const allPending = profiles.every(({ url }) => url === null);
   @media (min-width: 601px) and (max-width: 900px) {
     .footer-social { grid-template-columns: .7fr 1.5fr; gap: 20px; }
     .social-intro h2 { font-size: 28px; }
-    .social-caption { font-size: 12px; min-height: 32px; }
+    .social-caption { font-size: 13px; min-height: 34px; }
     .social-card summary { padding-inline: 10px; }
   }
   @media (max-width: 600px) {
-    .footer-social { grid-template-columns: 1fr; padding-block: 12px; gap: 10px; }
+    .footer-social { grid-template-columns: 1fr; padding-block: 16px; gap: 14px; }
     .social-kicker { margin-bottom: 3px; }
     .social-intro h2 { font-size: 28px; }
-    .social-intro > p:last-child { margin-top: 5px; font-size: 10px; }
-    .social-list { gap: 8px; }
-    .social-card summary { padding: 10px 8px 8px; }
-    .social-peek { width: 20px; height: 20px; font-size: 17px; }
-    .social-topline { margin-bottom: 5px; }
-    .social-name { font-size: 11px; }
+    .social-intro > p:last-child { margin-top: 5px; }
+    .social-list { grid-template-columns: 1fr; gap: 10px; }
+    .social-card summary { display: grid; grid-template-columns: 29px minmax(0, 1fr) 24px; grid-template-areas: "badge name peek" "badge status peek"; align-items: center; column-gap: 12px; min-height: 56px; padding: 10px 12px; }
+    .social-topline { display: contents; }
+    .social-badge { grid-area: badge; }
+    .social-name { grid-area: name; }
     .social-caption { display: none; }
-    .social-status { margin-top: 8px; font-size: 8px; }
-    .social-note { padding: 2px 8px 10px; font-size: 10px; }
+    .social-status { grid-area: status; margin: 0; padding-top: 0; border-top: 0; font-size: 12px; }
+    .social-peek { grid-area: peek; }
+    .social-note { padding: 2px 12px 12px 53px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .social-card summary:hover { transform: none; }

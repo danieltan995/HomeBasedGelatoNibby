@@ -15,7 +15,7 @@ export function initFlavourCards() {
       front.inert = open;
       back.setAttribute('aria-hidden', String(!open));
       back.inert = !open;
-      label.textContent = open ? 'Flip me back' : 'Flip me for the scoop';
+      label.textContent = open ? 'Back to cup' : 'Ingredients & allergens';
     };
     toggle.addEventListener('click', () => showNotes(toggle.getAttribute('aria-expanded') !== 'true'));
     card.addEventListener('keydown', (event) => {

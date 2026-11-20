@@ -26,7 +26,7 @@ const preview = getFlavourPresentation(flavour);
       </div>}
     </div>
     {!preview.comingSoon && <button type="button" class="flip-toggle" data-flip-toggle hidden aria-expanded="false" aria-controls={`notes-${flavour.id}`}>
-      <span class="flip-hint"><Doodle kind="turn" /><span data-flip-label>Flip me for the scoop</span></span><span class="sr-only"> — {preview.name}</span>
+      <span class="flip-hint"><Doodle kind="turn" /><span data-flip-label>Ingredients &amp; allergens</span></span><span class="sr-only"> — {preview.name}</span>
     </button>}
   </div>
   <div class="product-info">
@@ -36,7 +36,7 @@ const preview = getFlavourPresentation(flavour);
       <div class="teaser-status"><span class="coming-soon-label">Coming soon</span><span>Not available to order yet</span></div>
     </> : <>
       <details class="product-details" data-flip-fallback><summary>A closer look <span aria-hidden="true">+</span></summary><div><FlavourNotes flavour={flavour} /></div></details>
-      <div class="product-bottom"><span class="product-price">{formatPrice(flavour.priceMinor, business.currency)}</span><button class="add-cup" data-add={flavour.id} data-enhance hidden disabled={!canSelectFlavour(flavour)} aria-label={flavour.availability === 'sold-out' ? `${flavour.name}: unavailable` : `Add a cup of ${flavour.name} to your cups`}><span class="add-cup-label">{flavour.availability === 'sold-out' ? 'Unavailable' : 'Add a cup'}</span><Arrow /></button></div>
+      <div class="product-bottom"><span class="product-price">{business.mode === 'draft' && <span class="price-flag">Draft<span class="sr-only"> price</span></span>}<span>{formatPrice(flavour.priceMinor, business.currency)}</span></span><button class="add-cup" data-add={flavour.id} data-enhance hidden disabled={!canSelectFlavour(flavour)} aria-label={flavour.availability === 'sold-out' ? `${flavour.name}: unavailable` : `Add to your cups: ${flavour.name}`}><span class="add-cup-label">{flavour.availability === 'sold-out' ? 'Unavailable' : 'Add to your cups'}</span><Arrow /></button></div>
     </>}
   </div>
 </article>

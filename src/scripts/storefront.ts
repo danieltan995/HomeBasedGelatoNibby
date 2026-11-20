@@ -20,6 +20,31 @@ function element<K extends keyof HTMLElementTagNameMap>(tag: K, className: strin
   return node;
 }
 
+// Narrow phones collapse the main navigation into a disclosure menu; wider layouts ignore this state.
+function initNavMenu() {
+  const header = document.querySelector<HTMLElement>('.site-header');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const nav = document.querySelector<HTMLElement>('#site-nav');
+  if (!header || !toggle || !nav) return;
+  const setOpen = (open: boolean) => {
+    toggle.setAttribute('aria-expanded', String(open));
+    header.toggleAttribute('data-nav-open', open);
+  };
+  const isOpen = () => toggle.getAttribute('aria-expanded') === 'true';
+  toggle.addEventListener('click', () => setOpen(!isOpen()));
+  nav.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('a')) setOpen(false);
+  });
+  document.addEventListener('click', (event) => {
+    if (isOpen() && event.target instanceof Node && !toggle.contains(event.target) && !nav.contains(event.target)) setOpen(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !isOpen()) return;
+    setOpen(false);
+    toggle.focus();
+  });
+}
+
 function initStorefront() {
   const dialog = required<HTMLDialogElement>('#order-dialog');
   const lineContainer = required<HTMLElement>('[data-order-lines]');
@@ -194,7 +219,7 @@ function initStorefront() {
           label.textContent = 'Added!';
           button.dataset.added = '';
           addedTimer = setTimeout(() => {
-            label.textContent = 'Add a cup';
+            label.textContent = 'Add to your cups';
             delete button.dataset.added;
           }, 1000);
         }
@@ -250,5 +275,6 @@ function initStorefront() {
   document.querySelectorAll<HTMLElement>('[data-enhance]').forEach((node) => { node.hidden = false; });
 }
 
+initNavMenu();
 initFlavourCards();
 initStorefront();

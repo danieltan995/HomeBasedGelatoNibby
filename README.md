@@ -33,7 +33,7 @@ The Playwright suite starts its own production preview on port 4322 through Astr
 - [src/pages/index.astro](src/pages/index.astro): brand introduction, ordering guide and FAQ.
 - [src/components](src/components): reusable header, hero, product cards, order dialog and footer.
 
-Use `null` for unknown prices/currency/contact; never enter dummy values. Prices are integer currency minor units, e.g. **1250** represents **12.50** for MYR. `0` is a genuine zero price, not a placeholder. Do not enter currency symbols or decimals in the numeric field. The displayed subtotal is unknown if any selected price or currency is unknown.
+Use `null` for unknown prices/currency/contact; never enter dummy values. In `draft` mode every price tag carries a “Draft” flag, the preview banner says prices are not final and the order panel reads “Draft subtotal”; switching to `live` removes these labels. Prices are integer currency minor units, e.g. **1250** represents **12.50** for MYR. `0` is a genuine zero price, not a placeholder. Do not enter currency symbols or decimals in the numeric field. The displayed subtotal is unknown if any selected price or currency is unknown.
 
 WhatsApp numbers must be 8–15 international digits only, with country code and without `+`, punctuation or the local trunk zero. Format validation does **not** establish that the number exists or belongs to the business. Verify it manually before launch.
 
@@ -49,7 +49,7 @@ When it is ready, review the actual product details, allergens, volume and price
 
 ### Interactive flavour cards
 
-Tap/click a revealed cup to flip the artwork into flavour notes; tap “Back to cup” to return. Enter/Space toggle the focused control, and Escape returns to the illustration. Desktop hover only hints at the interaction, so it never interrupts reading. Names, prices and Add a cup stay outside the flipping area. The mystery teaser remains static and unorderable.
+Tap/click a revealed cup to flip the artwork into flavour notes; the persistent “Ingredients & allergens” hint becomes “Back to cup” once flipped. Enter/Space toggle the focused control, and Escape returns to the illustration. Desktop hover only hints at the interaction, so it never interrupts reading. Names, prices and Add to your cups stay outside the flipping area. The mystery teaser remains static and unorderable.
 
 Reduced-motion mode swaps faces instantly. Without JavaScript, the original native “A closer look” disclosure remains available. Flavour descriptions/allergen notes share one component, [src/components/FlavourNotes.astro](src/components/FlavourNotes.astro), so both presentations stay in sync. Decorative stars, suns and hearts use inline SVG in [src/components/Doodle.astro](src/components/Doodle.astro), avoiding iOS emoji substitution.
 
